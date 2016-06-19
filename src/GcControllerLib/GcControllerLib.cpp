@@ -13,7 +13,7 @@ ISR(INT0_vect, ISR_NAKED) {
 void GcController::init() {
   // initialize digital pin 2 an input with pull-up
   // TODO REMOVE THIS BEFORE INTERFACING WITH A REAL WII?GC
-  pinMode(2, INPUT_PULLUP);
+  pinMode(2, INPUT);
   enableInterrupt(digitalPinToInterrupt(2), LOW);
 
   TCCR1A = 0;
