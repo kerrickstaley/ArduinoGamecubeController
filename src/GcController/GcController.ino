@@ -3,11 +3,6 @@
 void setup() {
   // initialize digital pin 13 as an output.
   pinMode(13, OUTPUT);
-
-  // initialize digital pin 2 an input with pull-up
-  pinMode(2, INPUT_PULLUP);
-
-  enableInterrupt(digitalPinToInterrupt(2), LOW);
 }
 
 void loop() {
