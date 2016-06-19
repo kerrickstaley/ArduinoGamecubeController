@@ -14,6 +14,7 @@ public:
 
     // time since last pin-low interrupt, in microseconds, with a granularity of 4 microseconds
     uint32_t time_since_pin_low();
+    uint8_t latest_data(uint8_t*& data_ptr);
 };
 
 extern GcController gc_controller;

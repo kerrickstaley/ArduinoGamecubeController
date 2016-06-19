@@ -26,4 +26,27 @@ uint32_t GcController::time_since_pin_low() {
     return timer * 4;
 }
 
+extern "C" {
+  extern uint8_t gcBufCtrl[14];
+}
+
+uint8_t GcController::latest_data(uint8_t*& data_ptr) {
+  // returns size
+  // todo rewrite in assembly
+  data_ptr = NULL;
+
+  cli();
+  if (*gcBufCtrl & 1) {
+    data_ptr = gcBufCtrl + *gcBufCtrl;
+    *gcBufCtrl = (*gcBufCtrl & ~1) ^ 0b1000;
+  }
+  sei();
+
+  if (data_ptr == NULL) {
+    return 0;
+  }
+
+  return *(data_ptr + 4);
+}
+
 GcController gc_controller;
