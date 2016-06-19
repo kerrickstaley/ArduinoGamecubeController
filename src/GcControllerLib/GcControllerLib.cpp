@@ -11,20 +11,19 @@ ISR(INT0_vect, ISR_NAKED) {
 }
 
 void GcController::init() {
-  // initialize digital pin 2 an input with pull-up
-  // TODO REMOVE THIS BEFORE INTERFACING WITH A REAL WII?GC
+  // initialize digital pin 2 as an input
   pinMode(2, INPUT);
   enableInterrupt(digitalPinToInterrupt(2), LOW);
 
   TCCR1A = 0;
-  // set timer0 prescaler to 1024 -> 15625 ticks per second
-  TCCR1B = (TCCR1B & 0b11111000) | 0x5;
+  // set timer1 prescaler to 64 -> 250000 ticks per second
+  TCCR1B = (TCCR1B & 0b11111000) | 0x3;
 }
 
-uint16_t GcController::time_since_pin_low() {
-    uint16_t timer = TCNT1L;
+uint32_t GcController::time_since_pin_low() {
+    uint32_t timer = TCNT1L;
     timer |= TCNT1H << 8;
-    return (uint32_t)timer * 10000 / 15625;
+    return timer * 4;
 }
 
 GcController gc_controller;
