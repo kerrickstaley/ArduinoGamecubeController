@@ -93,20 +93,21 @@ inc r17                     ; (1)
 sawZero2:
 
 ; if we finished a byte write it out
-andi r29, 0b111             ; (1)
+mov r16, r29                ; (1)
+andi r16, 0b111             ; (1)
 breq noStore                ; (2/1)
 st z+, r17                  ; (1)
 noStore:
 
 ; 25 bits is the max packet size, if we are at 25 bits bail out
 cpi r29, 25                 ; (1)
-brge done                  ; (2/1)
+brge done                   ; (2/1)
 
-; We've used 11 cycles, and we need to use 40. Nop for 29
-nop_block 29
+; We've used 12 cycles, and we need to use 40. Nop for 28
+nop_block 28
 
 ; Check if the line is zero and we should continue.
-in r16, DIRECT_PORT(PIND)  ; (1)
+in r16, DIRECT_PORT(PIND)   ; (1)
 andi r16, (1 << 2)          ; (1)
 brne done                   ; (2/1)
 
