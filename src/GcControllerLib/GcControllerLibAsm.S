@@ -15,12 +15,6 @@ nop_block "(\nop_cnt-1)"
 
 .data
 .comm gcBufCtrl, 14    ; Bit 3 indicates which buffer should be written. Bit 0 indicates whether new data is available.
-/*
-.comm gcInBuf1, 4, 1
-.comm gcInBuf1Size, 4, 1  ; Only a 1-byte value but we add 3 bytes of padding
-.comm gcInBuf1, 4, 1
-.comm gcInBuf2Size, 1, 1
-*/
 
 .text
 .global isrHandler
@@ -36,14 +30,14 @@ push r16                    ; (2)
 
 ; wait for line to go high again
 waitForHigh:
-in r16, DIRECT_PORT(PORTD)  ; (1)
+in r16, DIRECT_PORT(PIND)   ; (1)
 andi r16, (1 << 2)          ; (1)
 breq waitForHigh            ; (2/1)
 
 eor r17, r17                ; (1)
 waitForLow:
 inc r17                     ; (1) line was already high once in waitForHigh so we count that
-in r16, DIRECT_PORT(PORTD)  ; (1)
+in r16, DIRECT_PORT(PIND)   ; (1)
 andi r16, (1 << 2)          ; (1)
 brne waitForLow             ; (2/1)
 
@@ -57,7 +51,7 @@ brne waitForLow             ; (2/1)
 ; r17 should be around 48 / 5 = 9.6 if it was a 1
 ; a good cutoff would be r17 < 7 -> 0, r15 >= 7 -> 1, although these might both be lower because it takes time for the
 ; signal to rise and Arduino operates at 5v whereas the signal is 3.3v
-; let's use < 7 as the cutoff for now.
+; let's use < 5 as the cutoff for now.
 
 ; Finish setting up. We only did a minimal amount of this above because the ISR might be delayed and we want
 ; to catch the "high" fraction of the first bit as soon as possible.
@@ -65,8 +59,8 @@ brne waitForLow             ; (2/1)
 push r31                    ; (2)
 push r30                    ; (2)
 push r29                    ; (2)
-ldi r30, lo8(gcBufCtrl) ; (1)
-ldi r31, hi8(gcBufCtrl)   ; (1)
+ldi r30, lo8(gcBufCtrl)     ; (1)
+ldi r31, hi8(gcBufCtrl)     ; (1)
 ldi r29, 1                  ; (1)
 
 ld r16, Z                   ; (1)
@@ -79,7 +73,7 @@ adc r31, r16                ; (1)
 ; we've used 15 cycles
 
 ; High bit of r17 is always 1, when it overflows we know we've received a full byte.
-cpi r17, 7                  ; (1)
+cpi r17, 5                  ; (1)
 ldi r17, 0b10               ; (1)
 brlo sawZero                ; (2/1)
 inc r17                     ; (1)
@@ -89,7 +83,7 @@ sawZero:
 nop_block 8
 
 readBits:
-in r16, DIRECT_PORT(PORTD)  ; (1)
+in r16, DIRECT_PORT(PIND)  ; (1)
 
 inc r29                     ; (1)
 lsl r17                     ; (1)
@@ -112,7 +106,7 @@ brge done                  ; (2/1)
 nop_block 29
 
 ; Check if the line is zero and we should continue.
-in r16, DIRECT_PORT(PORTD)  ; (1)
+in r16, DIRECT_PORT(PIND)  ; (1)
 andi r16, (1 << 2)          ; (1)
 brne done                   ; (2/1)
 
@@ -145,6 +139,10 @@ ldi r30, (TCNT1H & 0xFF)
 ldi r31, (TCNT1H >> 8)
 st z, r16
 st -z, r16
+
+; reset the interrupt register so we don't immediately re-enter the interrupt
+ldi r16, 1
+out DIRECT_PORT(EIFR), r16
 
 ; restore state
 pop r29
