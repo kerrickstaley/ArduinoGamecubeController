@@ -95,7 +95,7 @@ sawZero2:
 ; if we finished a byte write it out
 mov r16, r29                ; (1)
 andi r16, 0b111             ; (1)
-brne store                  ; (2/1)
+breq store                  ; (2/1)
 nop                         ; (1)
 rjmp doneStore              ; (2)
 store:
