@@ -18,6 +18,9 @@ void GcController::init() {
   TCCR1A = 0;
   // set timer1 prescaler to 64 -> 250000 ticks per second
   TCCR1B = (TCCR1B & 0b11111000) | 0x3;
+
+  // disable timer0
+  TCCR0B &= ~0b111;
 }
 
 uint32_t GcController::time_since_pin_low() {
