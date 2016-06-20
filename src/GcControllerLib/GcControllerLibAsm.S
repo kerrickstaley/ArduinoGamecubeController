@@ -126,7 +126,7 @@ st z, r17
 
 ; store the byte count in the relevant gcInBufSize field
 ; first reset Z to point back to gcInBuf
-mov r16, r17
+mov r16, r29
 lsr r16
 lsr r16
 lsr r16
