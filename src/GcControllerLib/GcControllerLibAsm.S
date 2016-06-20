@@ -131,7 +131,7 @@ ldi r16, 0
 sbc r31, r16
 
 ; now store
-std z+4, r17
+std z+4, r29
 
 ; reset TIMER1
 ; have to write high byte first; the write is atomic
