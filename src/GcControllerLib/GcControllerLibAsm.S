@@ -104,7 +104,7 @@ doneStore:
 
 ; 25 bits is the max packet size, if we are at 25 bits bail out
 cpi r29, 25                 ; (1)
-brge done                   ; (2/1)
+brsh done                   ; (2/1)
 
 ; We've used 14 cycles, and we need to use 40. Nop for 26
 nop_block 26
