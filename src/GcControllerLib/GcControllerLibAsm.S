@@ -63,14 +63,14 @@ ldi r30, lo8(gcBufCtrl)     ; (1)
 ldi r31, hi8(gcBufCtrl)     ; (1)
 ldi r29, 1                  ; (1)
 
-ld r16, Z                   ; (1)
+ld r16, Z                   ; (2)
 ori r16, 1                  ; (1)
-st Z, r16                   ; (1)
+st Z, r16                   ; (2)
 add r30, r16                ; (1)
 ldi r16, 0                  ; (1)
 adc r31, r16                ; (1)
 
-; we've used 15 cycles
+; we've used 17 cycles
 
 ; High bit of r17 is always 1, when it overflows we know we've received a full byte.
 cpi r17, 5                  ; (1)
@@ -79,11 +79,11 @@ brlo sawZero                ; (2/1)
 inc r17                     ; (1)
 sawZero:
 
-; we've used 19 cycles, now we nop for 8
-nop_block 8
+; we've used 21 cycles, now we nop for 6
+nop_block 6
 
 readBits:
-in r16, DIRECT_PORT(PIND)  ; (1)
+in r16, DIRECT_PORT(PIND)   ; (1)
 
 inc r29                     ; (1)
 lsl r17                     ; (1)
@@ -95,16 +95,19 @@ sawZero2:
 ; if we finished a byte write it out
 mov r16, r29                ; (1)
 andi r16, 0b111             ; (1)
-breq noStore                ; (2/1)
-st z+, r17                  ; (1)
-noStore:
+brne store                  ; (2/1)
+nop                         ; (1)
+rjmp doneStore              ; (2)
+store:
+st z+, r17                  ; (2)
+doneStore:
 
 ; 25 bits is the max packet size, if we are at 25 bits bail out
 cpi r29, 25                 ; (1)
 brge done                   ; (2/1)
 
-; We've used 12 cycles, and we need to use 40. Nop for 28
-nop_block 28
+; We've used 14 cycles, and we need to use 40. Nop for 26
+nop_block 26
 
 ; Check if the line is zero and we should continue.
 in r16, DIRECT_PORT(PIND)   ; (1)
