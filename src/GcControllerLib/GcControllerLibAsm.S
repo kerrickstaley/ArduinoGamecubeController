@@ -20,6 +20,10 @@ nop_block "(\nop_cnt-1)"
 .global isrHandler
 isrHandler:
 
+; respond to query from Wii
+; publicly available documentation suggests the cycle time for each bit of the protocol is 4us, however, I found that
+; the code works properly if we assume a 5us cycle (i.e. 80 clocks per cycle)
+
 ; we've already burnt 3 cycles from the start of the ISR due to the JMP
 
 ; save r17, r16, and SREG
@@ -43,7 +47,7 @@ brne waitForLow             ; (2/1)
 
 ; We're now sync'd up with the external signal.
 ; We are, on average, 5 cycles after the start of "low" section
-; We want to do our reads 32 cycles after the start of the "low" section, so we have 27 more cycles to use
+; We want to do our reads 40 cycles after the start of the "low" section, so we have 35 more cycles to use
 
 ; the waitForLow loop takes 5 cycles
 ; r17 is the number of times we saw the line high
@@ -79,8 +83,8 @@ brlo sawZero                ; (2/1)
 inc r17                     ; (1)
 sawZero:
 
-; we've used 21 cycles, now we nop for 6
-nop_block 6
+; we've used 21 cycles, now we nop for 14
+nop_block 14
 
 readBits:
 in r16, DIRECT_PORT(PIND)   ; (1)
@@ -104,18 +108,20 @@ doneStore:
 
 ; 25 bits is the max packet size, if we are at 25 bits bail out
 cpi r29, 25                 ; (1)
-brsh done                   ; (2/1)
+brlo continueLoop           ; (2/1)
+rjmp done                   ; (2/1)
 
-; We've used 14 cycles, and we need to use 40. Nop for 26
-nop_block 26
+continueLoop:
+; We've used 15 cycles, and we need to use 50. Nop for 35
+nop_block 35
 
 ; Check if the line is zero and we should continue.
 in r16, DIRECT_PORT(PIND)   ; (1)
 andi r16, (1 << 2)          ; (1)
 brne done                   ; (2/1)
 
-; We've used 3 cycles, and we need to use 24. Nop for 19 (because of the rjmp).
-nop_block 19
+; We've used 3 cycles, and we need to use 30. Nop for 25 and rjmp for 2.
+nop_block 25
 rjmp readBits
 
 done:
